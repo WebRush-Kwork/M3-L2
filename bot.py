@@ -74,6 +74,28 @@ def random_movie(message):
     senf_info(bot, message, row)
 
 
+@bot.message_handler(commands=['favorites'])
+def favorite_handler(message):
+    user_id = message.from_user.id
+    con = sqlite3.connect("movie_database.db")
+
+    with con:
+        cur = con.cursor()
+        cur1 = con.cursor()
+        movies = []
+        for row in cur.execute("select movie_id from favorites_movie where user_id = ?", (user_id,)):
+            cur1.execute("select title from movies where id = ?", (row[0],))
+            title = cur1.fetchone()
+            movies.append(title[0])
+        cur1.close()
+        cur.close()
+
+    movies = '\
+    '.join(movies)
+
+    bot.send_message(message.chat.id, movies)
+
+
 @bot.message_handler(func=lambda message: True)
 def echo_message(message):
 
